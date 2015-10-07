@@ -49,7 +49,61 @@ WIDGET.DOM = typeof WIDGET.DOM != "undefined" && WIDGET.DOM ? WIDGET.DOM : {
 
         xhr.send();
     },
+    loading: function() {
+        document.getElementById('search-provider').value = 'Загрузка...';
+        document.getElementById('search-provider').style.opacity = 1;
+    },
+    selectCity: function(resultLocations) {
+        selectCity = document.getElementById('widget-city');
+        for (var i = 0, items_len = resultLocations['city'].length; i < items_len; i++) {
+            var opt = document.createElement('option');
+            opt.value = resultLocations['city'][i]['id'];
+            if (i == 0) {
+                opt.selected = true;
+            }
+            opt.innerHTML = resultLocations['city'][i]['name'];
+            selectCity.appendChild(opt);
+        }
+    },
+    selectStreet: function(resultLocations) {
+        selectStreet = document.getElementById('widget-street');
+        selectStreet.innerHTML = '';
+        if (resultLocations['street'].length > 0) {
+            for (var i = 0, items_len = resultLocations['street'].length; i < items_len; i++) {
+                var opt = document.createElement('option');
+                opt.value = resultLocations['street'][i]['id'];
+                opt.innerHTML = resultLocations['street'][i]['name'];
+                selectStreet.appendChild(opt);
+            }
+        } else {
+            var opt = document.createElement('option');
+            opt.value = '';
+            opt.innerHTML = '-';
+            selectStreet.appendChild(opt);
+        }
+    },
+    selectHouse: function(resultLocations) {
+        WIDGET.DOM.loading();
+        selectHouse = document.getElementById('house');
+        selectHouse.innerHTML = '';
+        if (resultLocations['house'].length > 0) {
+            document.getElementById('search-provider').style.opacity = 1;
+            for (var i = 0, items_len = resultLocations['house'].length; i < items_len; i++) {
+                var opt = document.createElement('option');
+                opt.value = resultLocations['house'][i]['url'];
+                opt.innerHTML = resultLocations['house'][i]['name'];
+                selectHouse.appendChild(opt);
+            }
+        } else {
+            document.getElementById('search-provider').style.opacity = 0.2;
+            var opt = document.createElement('option');
+            opt.value = '';
+            opt.innerHTML = '-';
+            selectHouse.appendChild(opt);
+        }
+    },
     refreshHouse: function(url) {
+        WIDGET.DOM.loading();
         var e = document.getElementById("widget-city");
         var newCity = e.options[e.selectedIndex].value;
         var e = document.getElementById("widget-street");
@@ -66,14 +120,12 @@ WIDGET.DOM = typeof WIDGET.DOM != "undefined" && WIDGET.DOM ? WIDGET.DOM : {
             xhr = null;
         }
         xhr.onload = function() {
+            WIDGET.DOM.loading();
             var t = xhr.responseText;
             resultLocations = JSON.parse(t);
-            selectHouse = document.getElementById('house');
-            for (var i = 0, items_len = resultLocations['house'].length; i < items_len; i++) {
-                var opt = document.createElement('option');
-                opt.value = resultLocations['house'][i]['url'];
-                opt.innerHTML = resultLocations['house'][i]['name'];
-                selectHouse.appendChild(opt);
+            WIDGET.DOM.selectHouse(resultLocations);
+            if (xhr.status) {
+                document.getElementById('search-provider').value = 'Подобрать';
             }
         };
         xhr.onerror = function() {
@@ -83,6 +135,7 @@ WIDGET.DOM = typeof WIDGET.DOM != "undefined" && WIDGET.DOM ? WIDGET.DOM : {
         xhr.send(params);
     },
     refreshStreet: function(url) {
+        WIDGET.DOM.loading();
         var e = document.getElementById("widget-city");
         var newCity = e.options[e.selectedIndex].value;
         params = "city_lat=" + newCity;
@@ -96,21 +149,13 @@ WIDGET.DOM = typeof WIDGET.DOM != "undefined" && WIDGET.DOM ? WIDGET.DOM : {
             xhr = null;
         }
         xhr.onload = function() {
+            WIDGET.DOM.loading();
             var t = xhr.responseText;
             resultLocations = JSON.parse(t);
-            selectStreet = document.getElementById('widget-street');
-            for (var i = 0, items_len = resultLocations['street'].length; i < items_len; i++) {
-                var opt = document.createElement('option');
-                opt.value = resultLocations['street'][i]['id'];
-                opt.innerHTML = resultLocations['street'][i]['name'];
-                selectStreet.appendChild(opt);
-            }
-            selectHouse = document.getElementById('house');
-            for (var i = 0, items_len = resultLocations['house'].length; i < items_len; i++) {
-                var opt = document.createElement('option');
-                opt.value = resultLocations['house'][i]['url'];
-                opt.innerHTML = resultLocations['house'][i]['name'];
-                selectHouse.appendChild(opt);
+            WIDGET.DOM.selectStreet(resultLocations);
+            WIDGET.DOM.selectHouse(resultLocations);
+            if (xhr.status) {
+                document.getElementById('search-provider').value = 'Подобрать';
             }
         };
         xhr.onerror = function() {
@@ -130,33 +175,14 @@ WIDGET.DOM = typeof WIDGET.DOM != "undefined" && WIDGET.DOM ? WIDGET.DOM : {
             xhr = null;
         }
         xhr.onload = function() {
+            WIDGET.DOM.loading();
             var t = xhr.responseText;
             resultLocations = JSON.parse(t);
-
-            selectCity = document.getElementById('widget-city');
-            for (var i = 0, items_len = resultLocations['city'].length; i < items_len; i++) {
-                var opt = document.createElement('option');
-                opt.value = resultLocations['city'][i]['id'];
-                if (i == 0) {
-                    opt.selected = true;
-                }
-                opt.innerHTML = resultLocations['city'][i]['name'];
-                selectCity.appendChild(opt);
-            }
-
-            selectStreet = document.getElementById('widget-street');
-            for (var i = 0, items_len = resultLocations['street'].length; i < items_len; i++) {
-                var opt = document.createElement('option');
-                opt.value = resultLocations['street'][i]['id'];
-                opt.innerHTML = resultLocations['street'][i]['name'];
-                selectStreet.appendChild(opt);
-            }
-            selectHouse = document.getElementById('house');
-            for (var i = 0, items_len = resultLocations['house'].length; i < items_len; i++) {
-                var opt = document.createElement('option');
-                opt.value = resultLocations['house'][i]['url'];
-                opt.innerHTML = resultLocations['house'][i]['name'];
-                selectHouse.appendChild(opt);
+            WIDGET.DOM.selectCity(resultLocations);
+            WIDGET.DOM.selectStreet(resultLocations);
+            WIDGET.DOM.selectHouse(resultLocations);
+            if (xhr.status) {
+                document.getElementById('search-provider').value = 'Подобрать';
             }
         };
         xhr.onerror = function() {
@@ -280,7 +306,7 @@ WIDGET.Dialog = typeof WIDGET.Dialog != "undefined" && WIDGET.Dialog ? WIDGET.Di
                 var url = "http://multitest.ua" + url;
                 url = url + "?source_other=" + document.getElementById("multitest-code").value;
                 window.open(url, "_blank");
-            } catch(e) {
+            } catch (e) {
                 console.log(e.name);
             }
         },
